@@ -3,14 +3,10 @@ package com.irv.examplestest;
 import com.irv.examplestest.exceptions.DineroInsuficienteException;
 import com.irv.examplestest.repository.BancoRepository;
 import com.irv.examplestest.repository.CuentaRepository;
-import com.irv.examplestest.services.CuentaService;
 import com.irv.examplestest.services.CuentaServiceImpl;
-import com.irv.examplestest.web.model.Banco;
-import com.irv.examplestest.web.model.Cuenta;
-import org.junit.jupiter.api.BeforeEach;
+import com.irv.examplestest.web.model.BancoDTO;
+import com.irv.examplestest.web.model.CuentaDTO;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -50,49 +46,49 @@ class ExamplesTestApplicationTests {
 		//Aqui se mockearon los datos porque no se tiene una
 		// implementacion de los metodos de la interfaz
 		// (Hasta ahora)
-		when(cuentaRepository.findById(1L)).thenReturn(Data.CUENTA_1);
-		when(cuentaRepository.findById(2L)).thenReturn(Data.CUENTA_2);
-		when(bancoRepository.findById(1L)).thenReturn(Data.BANCO_1);
+		when(cuentaRepository.findById(1L)).thenReturn(Data.CUENTA_DTO_1);
+		when(cuentaRepository.findById(2L)).thenReturn(Data.CUENTA_DTO_2);
+		when(bancoRepository.findById(1L)).thenReturn(Data.BANCO_DTO_1);
 
-		Cuenta cuentaOrigen = service.findById(1L);
-		Cuenta cuentaDestino = service.findById(2L);
-		Banco banco = service.findByIdBanco(1L);
-		assertNotNull(banco);
-		assertNotNull(cuentaOrigen);
-		assertNotNull(cuentaDestino);
-		assertEquals("Irving",cuentaOrigen.getPersona());
-		assertEquals("Juan",cuentaDestino.getPersona());
+		CuentaDTO cuentaDTOOrigen = service.findById(1L);
+		CuentaDTO cuentaDTODestino = service.findById(2L);
+		BancoDTO bancoDTO = service.findByIdBanco(1L);
+		assertNotNull(bancoDTO);
+		assertNotNull(cuentaDTOOrigen);
+		assertNotNull(cuentaDTODestino);
+		assertEquals("Irving", cuentaDTOOrigen.getPersona());
+		assertEquals("Juan", cuentaDTODestino.getPersona());
 
-		service.transferir(cuentaOrigen.getId(),cuentaDestino.getId(),new BigDecimal(100),banco.getId());
-		BigDecimal saldoOrigen = service.revisarSaldo(cuentaOrigen.getId());
-		BigDecimal saldoDestino = service.revisarSaldo(cuentaDestino.getId());
+		service.transferir(cuentaDTOOrigen.getId(), cuentaDTODestino.getId(),new BigDecimal(100), bancoDTO.getId());
+		BigDecimal saldoOrigen = service.revisarSaldo(cuentaDTOOrigen.getId());
+		BigDecimal saldoDestino = service.revisarSaldo(cuentaDTODestino.getId());
 
 //		Cuantas veces se ejecutaron los metodos siguientes
 		verify(cuentaRepository, times(2)).findById(1L);
 		verify(cuentaRepository, times(2)).findById(2L);
 		verify(cuentaRepository, times(4)).findById(anyLong());
-		verify(cuentaRepository,times(2)).update(any(Cuenta.class));
+		verify(cuentaRepository,times(2)).update(any(CuentaDTO.class));
 
 		verify(bancoRepository,times(1)).findById(anyLong());
-		verify(bancoRepository,times(1)).update(any(Banco.class));
+		verify(bancoRepository,times(1)).update(any(BancoDTO.class));
 
-		int totalTransferencias = service.revisarTotalTransferencias(banco.getId());//este no me salio
+		int totalTransferencias = service.revisarTotalTransferencias(bancoDTO.getId());//este no me salio
 		System.out.println(totalTransferencias);
 	}
 
 	//checar este metodo con el codigo original
 	@Test
 	void manejoExceptions() {
-		when(cuentaRepository.findById(1L)).thenReturn(Data.CUENTA_1);
-		when(cuentaRepository.findById(2L)).thenReturn(Data.CUENTA_2);
-		when(bancoRepository.findById(1L)).thenReturn(Data.BANCO_1);
+		when(cuentaRepository.findById(1L)).thenReturn(Data.CUENTA_DTO_1);
+		when(cuentaRepository.findById(2L)).thenReturn(Data.CUENTA_DTO_2);
+		when(bancoRepository.findById(1L)).thenReturn(Data.BANCO_DTO_1);
 
-		Cuenta cuentaOrigen = service.findById(1L);
-		Cuenta cuentaDestino = service.findById(2L);
-		Banco banco = service.findByIdBanco(1L);
+		CuentaDTO cuentaDTOOrigen = service.findById(1L);
+		CuentaDTO cuentaDTODestino = service.findById(2L);
+		BancoDTO bancoDTO = service.findByIdBanco(1L);
 
-		assertEquals("1000",cuentaOrigen.getSaldo().toPlainString());
-		assertEquals("2000",cuentaDestino.getSaldo().toPlainString());
+		assertEquals("1000", cuentaDTOOrigen.getSaldo().toPlainString());
+		assertEquals("2000", cuentaDTODestino.getSaldo().toPlainString());
 		assertThrows(DineroInsuficienteException.class,
 				() -> service.transferir(1L,2L, new BigDecimal(5000),1L));
 
@@ -101,12 +97,12 @@ class ExamplesTestApplicationTests {
 	//Assert Same
 	@Test
 	void testAssertSame() {
-		when(cuentaRepository.findById(1L)).thenReturn(Data.CUENTA_1);
-		Cuenta cuenta = service.findById(1L);
-		Cuenta cuenta2 = service.findById(1L);
-		assertNotNull(cuenta);
-		assertNotNull(cuenta2);
-		assertSame(cuenta,cuenta2);//es el mismo objeto
+		when(cuentaRepository.findById(1L)).thenReturn(Data.CUENTA_DTO_1);
+		CuentaDTO cuentaDTO = service.findById(1L);
+		CuentaDTO cuentaDTO2 = service.findById(1L);
+		assertNotNull(cuentaDTO);
+		assertNotNull(cuentaDTO2);
+		assertSame(cuentaDTO, cuentaDTO2);//es el mismo objeto
 		verify(cuentaRepository, times(2)).findById(1L);//tampoco me jalo pero ya perdi mucho tiempo
 	}
 }

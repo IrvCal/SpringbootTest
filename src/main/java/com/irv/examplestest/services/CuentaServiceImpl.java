@@ -4,14 +4,16 @@ import com.irv.examplestest.Data;
 import com.irv.examplestest.exceptions.DineroInsuficienteException;
 import com.irv.examplestest.repository.BancoRepository;
 import com.irv.examplestest.repository.CuentaRepository;
-import com.irv.examplestest.web.model.Banco;
-import com.irv.examplestest.web.model.Cuenta;
+import com.irv.examplestest.web.model.BancoDTO;
+import com.irv.examplestest.web.model.CuentaDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
 @Service
+@RequiredArgsConstructor
 public class CuentaServiceImpl implements CuentaService {
     private CuentaRepository cuentaRepository;
     private BancoRepository bancoRepository;
@@ -22,28 +24,28 @@ public class CuentaServiceImpl implements CuentaService {
     }
 
     @Override
-    public Cuenta findById(Long id) {
-        return Data.CUENTAS.stream()
+    public CuentaDTO findById(Long id) {
+        return Data.CUENTA_DTOS.stream()
                 .filter(cuenta -> cuenta.getId().equals(id))
                 .findAny().orElse(null);
     }
 
     @Override
-    public Banco findByIdBanco(Long id) {
-        return Data.BANCOS.stream()
+    public BancoDTO findByIdBanco(Long id) {
+        return Data.BANCO_DTOS.stream()
                 .filter(banco -> banco.getId().equals(id)).findAny().orElse(null);
     }
 
     @Override
     public int revisarTotalTransferencias(Long bancoId) {
-        return Data.BANCOS.stream()
+        return Data.BANCO_DTOS.stream()
                 .filter(banco -> banco.getId().equals(bancoId)).findAny().orElse(null).getTotalTransferencias();
     }
 
     @Override
     public BigDecimal revisarSaldo(Long cuentaId) {
-        Cuenta cuenta = cuentaRepository.findById(cuentaId);
-        return cuenta.getSaldo();
+        CuentaDTO cuentaDTO = cuentaRepository.findById(cuentaId);
+        return cuentaDTO.getSaldo();
     }
 
     /**
@@ -54,13 +56,13 @@ public class CuentaServiceImpl implements CuentaService {
      */
     @Override
     public void transferir(Long cuentaOrigen, Long cuentaDestino, BigDecimal monto,Long bancoId) {
-        Banco banco = bancoRepository.findById(bancoId);
-        int totalTransferencias =banco.getTotalTransferencias();
-        banco.setTotalTransferencias(++totalTransferencias);
-        bancoRepository.update(banco);
+        BancoDTO bancoDTO = bancoRepository.findById(bancoId);
+        int totalTransferencias = bancoDTO.getTotalTransferencias();
+        bancoDTO.setTotalTransferencias(++totalTransferencias);
+        bancoRepository.update(bancoDTO);
 
-        Cuenta cOrigen = cuentaRepository.findById(cuentaOrigen);
-        Cuenta cDestino = cuentaRepository.findById(cuentaDestino);
+        CuentaDTO cOrigen = cuentaRepository.findById(cuentaOrigen);
+        CuentaDTO cDestino = cuentaRepository.findById(cuentaDestino);
         try {
             cOrigen.debito(monto);
             cuentaRepository.update(cOrigen);

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Banco {
+public class BancoDTO {
     private Long id;
     private String nombre;
     private Integer totalTransferir;

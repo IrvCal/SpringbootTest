@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Cuenta {
+public class CuentaDTO {
     private Long id;
     private String persona;
     private BigDecimal saldo;
