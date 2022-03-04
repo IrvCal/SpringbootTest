@@ -1,9 +1,12 @@
 package com.irv.examplestest.services;
 
 import com.irv.examplestest.Data;
+import com.irv.examplestest.exceptions.BancoNotFoundException;
 import com.irv.examplestest.exceptions.DineroInsuficienteException;
 import com.irv.examplestest.repository.BancoRepository;
 import com.irv.examplestest.repository.CuentaRepository;
+import com.irv.examplestest.web.mappers.BancoMapper;
+import com.irv.examplestest.web.mappers.CuentaMapper;
 import com.irv.examplestest.web.model.BancoDTO;
 import com.irv.examplestest.web.model.CuentaDTO;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,10 @@ import java.math.BigDecimal;
 public class CuentaServiceImpl implements CuentaService {
     private CuentaRepository cuentaRepository;
     private BancoRepository bancoRepository;
+    @Autowired
+    CuentaMapper cuentaMapper;
+    @Autowired
+    BancoMapper bancoMapper;
 
     public CuentaServiceImpl(CuentaRepository cuentaRepository, BancoRepository bancoRepository) {
         this.cuentaRepository = cuentaRepository;
@@ -44,7 +51,8 @@ public class CuentaServiceImpl implements CuentaService {
 
     @Override
     public BigDecimal revisarSaldo(Long cuentaId) {
-        CuentaDTO cuentaDTO = cuentaRepository.findById(cuentaId);
+        System.out.println(cuentaMapper);
+        CuentaDTO cuentaDTO = cuentaMapper.cuentaToCuentaDTO(cuentaRepository.findById(cuentaId).orElseThrow());
         return cuentaDTO.getSaldo();
     }
 
@@ -56,19 +64,23 @@ public class CuentaServiceImpl implements CuentaService {
      */
     @Override
     public void transferir(Long cuentaOrigen, Long cuentaDestino, BigDecimal monto,Long bancoId) {
-        BancoDTO bancoDTO = bancoRepository.findById(bancoId);
-        int totalTransferencias = bancoDTO.getTotalTransferencias();
-        bancoDTO.setTotalTransferencias(++totalTransferencias);
-        bancoRepository.update(bancoDTO);
-
-        CuentaDTO cOrigen = cuentaRepository.findById(cuentaOrigen);
-        CuentaDTO cDestino = cuentaRepository.findById(cuentaDestino);
         try {
+            BancoDTO bancoDTO = null;
+            bancoDTO = bancoMapper.bancoToBancoDto(
+                    bancoRepository.findById(bancoId).orElseThrow(() ->
+                            new BancoNotFoundException("No se econtro el banco con el id: "+bancoId))
+            );
+            int totalTransferencias = bancoDTO.getTotalTransferencias();
+            bancoDTO.setTotalTransferencias(++totalTransferencias);
+            bancoRepository.save(bancoMapper.bancoDtoToBanco(bancoDTO));
+
+            CuentaDTO cOrigen = cuentaMapper.cuentaToCuentaDTO(cuentaRepository.findById(cuentaOrigen).orElseThrow());
+            CuentaDTO cDestino = cuentaMapper.cuentaToCuentaDTO(cuentaRepository.findById(cuentaDestino).orElseThrow());
             cOrigen.debito(monto);
-            cuentaRepository.update(cOrigen);
+            cuentaRepository.save(cuentaMapper.cuentaDtoToCuenta(cOrigen));
             cDestino.credito(monto);
-            cuentaRepository.update(cDestino);
-        } catch (DineroInsuficienteException e) {
+            cuentaRepository.save(cuentaMapper.cuentaDtoToCuenta(cDestino));
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
