@@ -1,28 +1,43 @@
 package com.irv.examplestest.services;
 
+import com.irv.examplestest.Data;
 import com.irv.examplestest.exceptions.DineroInsuficienteException;
 import com.irv.examplestest.repository.BancoRepository;
 import com.irv.examplestest.repository.CuentaRepository;
 import com.irv.examplestest.web.model.Banco;
 import com.irv.examplestest.web.model.Cuenta;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
+@Service
 public class CuentaServiceImpl implements CuentaService {
-    @Autowired
     private CuentaRepository cuentaRepository;
-    @Autowired
     private BancoRepository bancoRepository;
+
+    public CuentaServiceImpl(CuentaRepository cuentaRepository, BancoRepository bancoRepository) {
+        this.cuentaRepository = cuentaRepository;
+        this.bancoRepository = bancoRepository;
+    }
 
     @Override
     public Cuenta findById(Long id) {
-        return null;
+        return Data.CUENTAS.stream()
+                .filter(cuenta -> cuenta.getId().equals(id))
+                .findAny().orElse(null);
+    }
+
+    @Override
+    public Banco findByIdBanco(Long id) {
+        return Data.BANCOS.stream()
+                .filter(banco -> banco.getId().equals(id)).findAny().orElse(null);
     }
 
     @Override
     public int revisarTotalTransferencias(Long bancoId) {
-        return 0;
+        return Data.BANCOS.stream()
+                .filter(banco -> banco.getId().equals(bancoId)).findAny().orElse(null).getTotalTransferencias();
     }
 
     @Override
@@ -46,7 +61,6 @@ public class CuentaServiceImpl implements CuentaService {
 
         Cuenta cOrigen = cuentaRepository.findById(cuentaOrigen);
         Cuenta cDestino = cuentaRepository.findById(cuentaDestino);
-
         try {
             cOrigen.debito(monto);
             cuentaRepository.update(cOrigen);

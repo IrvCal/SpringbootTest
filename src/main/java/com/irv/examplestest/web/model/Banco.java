@@ -13,5 +13,5 @@ public class Banco {
     private Long id;
     private String nombre;
     private Integer totalTransferir;
-    private int totalTransferencias;
+    private int totalTransferencias=0;
 }
