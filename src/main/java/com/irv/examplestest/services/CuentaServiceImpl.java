@@ -1,6 +1,7 @@
 package com.irv.examplestest.services;
 
 import com.irv.examplestest.Data;
+import com.irv.examplestest.domain.Cuenta;
 import com.irv.examplestest.exceptions.BancoNotFoundException;
 import com.irv.examplestest.exceptions.DineroInsuficienteException;
 import com.irv.examplestest.repository.BancoRepository;
@@ -12,6 +13,7 @@ import com.irv.examplestest.web.model.CuentaDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
@@ -24,13 +26,14 @@ public class CuentaServiceImpl implements CuentaService {
     CuentaMapper cuentaMapper;
     @Autowired
     BancoMapper bancoMapper;
-
+    @Autowired
     public CuentaServiceImpl(CuentaRepository cuentaRepository, BancoRepository bancoRepository) {
         this.cuentaRepository = cuentaRepository;
         this.bancoRepository = bancoRepository;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CuentaDTO findById(Long id) {
         return Data.CUENTA_DTOS.stream()
                 .filter(cuenta -> cuenta.getId().equals(id))
@@ -38,22 +41,31 @@ public class CuentaServiceImpl implements CuentaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Cuenta findByIdCuenta(Long id) {
+        return cuentaRepository.findById(id).orElse(cuentaMapper.cuentaDtoToCuenta(CuentaDTO.builder().build()));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public BancoDTO findByIdBanco(Long id) {
         return Data.BANCO_DTOS.stream()
                 .filter(banco -> banco.getId().equals(id)).findAny().orElse(null);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int revisarTotalTransferencias(Long bancoId) {
         return Data.BANCO_DTOS.stream()
                 .filter(banco -> banco.getId().equals(bancoId)).findAny().orElse(null).getTotalTransferencias();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BigDecimal revisarSaldo(Long cuentaId) {
-        System.out.println(cuentaMapper);
-        CuentaDTO cuentaDTO = cuentaMapper.cuentaToCuentaDTO(cuentaRepository.findById(cuentaId).orElseThrow());
-        return cuentaDTO.getSaldo();
+        return cuentaMapper.cuentaToCuentaDTO(
+                cuentaRepository.findById(cuentaId).orElseThrow()).getSaldo();
+
     }
 
     /**
@@ -63,6 +75,7 @@ public class CuentaServiceImpl implements CuentaService {
      * @param monto
      */
     @Override
+    @Transactional
     public void transferir(Long cuentaOrigen, Long cuentaDestino, BigDecimal monto,Long bancoId) {
         try {
             BancoDTO bancoDTO = null;
