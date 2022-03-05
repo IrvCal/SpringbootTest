@@ -14,7 +14,7 @@ public class Data {
     public static final BancoDTO BANCO_DTO_1 = BancoDTO.builder().id(1L).nombre("Banamex").totalTransferencias(0).build();
     public static final BancoDTO BANCO_DTO_2 = BancoDTO.builder().id(2L).nombre("Patito").totalTransferencias(0).build();
     public static final BancoDTO BANCO_DTO_3 = BancoDTO.builder().id(3L).nombre("BBVA").totalTransferencias(0).build();
-    public static final List<CuentaDTO> CUENTA_DTOS = List.of(CUENTA_DTO_2, CUENTA_DTO_1, CUENTA_DTO_3);
+    public static final List<CuentaDTO> CUENTA_DTOS = List.of( CUENTA_DTO_1, CUENTA_DTO_2,CUENTA_DTO_3);
     public static final List<BancoDTO> BANCO_DTOS = List.of(
             BancoDTO.builder().id(1L).nombre("Banamex").build(),
             BancoDTO.builder().id(2L).nombre("Patito").build(),
