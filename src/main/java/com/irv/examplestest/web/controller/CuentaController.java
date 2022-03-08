@@ -4,6 +4,8 @@ import static org.springframework.http.HttpStatus.*;
 
 import com.irv.examplestest.domain.Cuenta;
 import com.irv.examplestest.services.CuentaService;
+import com.irv.examplestest.web.mappers.CuentaMapper;
+import com.irv.examplestest.web.model.CuentaDTO;
 import com.irv.examplestest.web.model.TransaccionDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,8 @@ import java.util.Map;
 @RequestMapping("/api-cuenta/")
 public class CuentaController {
     @Autowired
+    CuentaMapper cuentaMapper;
+    @Autowired
     CuentaService service;
 
     @GetMapping("/saludo")
@@ -26,9 +30,10 @@ public class CuentaController {
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(OK)
-    Cuenta getCuenta(@PathVariable Long id){
-        return service.findByIdCuenta(id);
+    ResponseEntity<?> getCuenta(@PathVariable Long id){
+        if(service.findByIdCuenta(id).isPresent())
+            return ResponseEntity.ok().build();
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping("/transferir")
@@ -55,4 +60,9 @@ public class CuentaController {
         return service.save(cuenta);
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(NO_CONTENT)
+    void deleteCuenta(@PathVariable Long id){
+        service.delete(id);
+    }
 }

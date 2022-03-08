@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -48,7 +49,7 @@ class CuentaControllerTest {
         CuentaMapper cuentaMapper = new CuentaMapperImpl();
         //Given
         when(cuentaService.findByIdCuenta(1L)).thenReturn(
-                cuentaMapper.cuentaDtoToCuenta(Data.CUENTA_DTO_1));
+                Optional.ofNullable(cuentaMapper.cuentaDtoToCuenta(Data.CUENTA_DTO_1)));
         //Then
         mockMvc.perform(MockMvcRequestBuilders.get("/api-cuenta/1")
                 .contentType(MediaType.APPLICATION_JSON))

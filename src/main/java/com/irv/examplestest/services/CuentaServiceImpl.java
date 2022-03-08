@@ -3,7 +3,7 @@ package com.irv.examplestest.services;
 import com.irv.examplestest.Data;
 import com.irv.examplestest.domain.Cuenta;
 import com.irv.examplestest.exceptions.BancoNotFoundException;
-import com.irv.examplestest.exceptions.DineroInsuficienteException;
+import com.irv.examplestest.exceptions.CuentaPersonaNotFoundException;
 import com.irv.examplestest.repository.BancoRepository;
 import com.irv.examplestest.repository.CuentaRepository;
 import com.irv.examplestest.web.mappers.BancoMapper;
@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -48,13 +49,13 @@ public class CuentaServiceImpl implements CuentaService {
     public CuentaDTO findById(Long id) {
         return Data.CUENTA_DTOS.stream()
                 .filter(cuenta -> cuenta.getId().equals(id))
-                .findAny().orElse(null);
+                .findAny().orElseThrow(() -> new CuentaPersonaNotFoundException("No existe esta cuenta"));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Cuenta findByIdCuenta(Long id) {
-        return cuentaRepository.findById(id).orElse(cuentaMapper.cuentaDtoToCuenta(CuentaDTO.builder().build()));
+    public Optional<Cuenta> findByIdCuenta(Long id) {
+        return cuentaRepository.findById(id);
     }
 
     @Override
@@ -107,5 +108,11 @@ public class CuentaServiceImpl implements CuentaService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long cuenta) {
+        cuentaRepository.deleteById(cuenta);
     }
 }
