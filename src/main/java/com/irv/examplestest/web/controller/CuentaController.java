@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api-cuenta/")
@@ -31,8 +32,9 @@ public class CuentaController {
 
     @GetMapping("/{id}")
     ResponseEntity<?> getCuenta(@PathVariable Long id){
-        if(service.findByIdCuenta(id).isPresent())
-            return ResponseEntity.ok().build();
+        Optional<Cuenta> cuenta =service.findByIdCuenta(id);
+        if(cuenta.isPresent())
+            return ResponseEntity.ok(cuenta.get());
         return ResponseEntity.notFound().build();
     }
 
